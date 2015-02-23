@@ -1,0 +1,33 @@
+# setwd("~/Google Drive/C-Core_no_euk_12-4-14/carbon-core-soil-paper/")
+# install.packages("phyloseq")
+# install.packages("plyr")
+# install.packages("ggplot2")
+# install.packages("reshape")
+library(phyloseq)
+library(plyr)
+library(ggplot2)
+library(reshape)
+source("http://bioconductor.org/biocLite.R")
+biocLite("phyloseq")
+
+
+# need to generate a table of all WS samples for co-occurrence, look down to the object called 'mdf'
+
+abundance_data <- read.delim(sep='\t', file="./summary.unfiltered.txt",header=TRUE, strip.white=TRUE, row.names=1)
+ann_data <- read.delim(sep='\t', file="./annotations_cazy.txt",header=TRUE, strip.white=TRUE, row.names=1)
+ann_only_euk <- subset(ann_data, t1 == "Eukaryota")
+unique(subset(ann_only_euk, t1=="Eukaryota")$EC)
+ann_data_filtered <- subset(ann_data, t1 != "Eukaryota" | t2 == "Fungi" )
+metadata = read.delim(file="./cobs_metadata.txt", row.names = 1, sep="\t", header=TRUE)
+ann_data_matrix <- as.matrix(ann_data_filtered)
+data_norm <- read.delim(sep='\t', file="./cumulative-all-normreca.txt",header=TRUE, strip.white=TRUE, row.names=1)
+
+ann_data_matrix <- as.matrix(ann_data_filtered)
+annotation <- tax_table(ann_data_matrix)
+abundance_data_norm_matrix <- as.matrix(data_norm)
+abundance_data <- as.matrix(data_norm)
+abundance <- otu_table(abundance_data, taxa_are_rows=TRUE)
+abundance <- otu_table(abundance_data_norm_matrix, taxa_are_rows=TRUE)
+metadata <- sample_data(metadata)
+all_agg <- phyloseq(metadata, annotation, abundance)
+mdf_noncore=psmelt(all_agg)
