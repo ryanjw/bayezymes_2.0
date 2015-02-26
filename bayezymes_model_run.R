@@ -1,37 +1,4 @@
-setwd("~/Google Drive/COBS_16S_biodiversity/")
-data<-read.table("phylo_and_fracs_unrar.txt",header=TRUE, check.names=FALSE, sep=" ")
-setwd("~/Google Drive/postdoc_writing/C-cycling_bayezymes/16S_co-occurrence_first/")
-head(data)
-library(reshape)
-genera<-data.frame(cast(data, Sample+Date+Block+Crop+SoilFrac~genus,value="value",fun.aggregate=sum ),check.names=FALSE)
-head(genera[,1:10])
-meta<-read.csv("~/Google Drive/COBS_16S_biodiversity/KBase_MGRast_Metadata_9May2013_EMB.csv",header=TRUE,check.names=FALSE)
 
-names(meta)
-meta<-meta[,c(1,6,8,12:16)]
-names(meta)[1]<-"Sample"
-m<-merge(genera,meta,by="Sample")
-
-library(lme4)
-library(lmerTest)
-library(vegan)
-
-m_sub<-subset(m, Crop=="CC" & Date=="12-Jul")
-dim(m_sub)
-names(m_sub)
-m_sub[,1:10]
-m_sub_data<-m_sub[,-c(1:6,327:333)]
-m_sub_data2<-m_sub_data[,which(colSums(decostand(m_sub_data,"pa")) > 8)]
-
-m_rem<-cbind(m_sub[,1:6],m_sub_data2,m_sub[,329:333])
-
-dim(m_rem)
-# m_rem[,c(1:5,145:150)]
-
-setwd("~/Google Drive/postdoc_writing/C-cycling_bayezymes/16S_co-occurrence_first/")
-write.table(m_rem, "genera_enz_for_cocur_cc_jul12.txt",row.names=FALSE,sep=" ")
-summary(dataset)
-dataset<-m_rem
 # Using rjags library that communicates to JAGS (Just Another Gibbs Sampler)
 library("rjags")
 
@@ -109,64 +76,9 @@ for(a in 3:(dim(dataset)[2]-1)){
 	}
 }
 
-
-## visualizing results
-
-setwd("~/Google\ Drive/postdoc_writing/C-cycling_bayezymes/")
-
-rez<-read.table("bayez_enz_16S_results.txt",header=TRUE,check.names=FALSE)
-head(rez)
+rez<-data.frame(bayezymes_results)
 names(rez)<-c("g1","g2","lm_mean","micro_mean","sm_mean","ws_mean","mean","lm_sd","micro_sd","sm_sd","ws_sd","sd","lm_hi","micro_hi","sm_hi","ws_hi","hi","lm_lo","micro_lo","sm_lo","ws_lo","lo")
 
-rez_sub<-subset(rez, hi > 0 & lo > 0)
-library(igraph)
-
-g<-graph.edgelist(as.matrix(rez_sub[,1:2]),directed=FALSE)
-plot(g)
-
-as.matrix((unique(rez_sub$g1)))
-as.matrix((unique(rez_sub$g2)))
-
-rez_enz<-subset(rez_sub, (g1=="AP Activity (nmol/h/g dry aggregate)" | g1=="BG Activity (nmol/h/g dry aggregate)") |
-(g2=="NAG Activity (nmol/h/g dry aggregate)" | g2=="CB Activity (nmol/h/g dry aggregate)" | g2=="AP Activity (nmol/h/g dry aggregate)" | g2=="BG Activity (nmol/h/g dry aggregate)" | g2=="BX Activity (nmol/h/g dry aggregate)"))
-
-rez_enz[,1:3]
-g_enz<-graph.edgelist(as.matrix(rez_enz[,1:2]),directed=FALSE)
-E(g_enz)$weight<-rez_enz$mean
-plot.igraph(g_enz,edge.width=log(E(g_enz)$weight,base=2))
-
-#looking at sub network
-
-rez_sub<-subset(rez, sm_hi > 0 & sm_lo > 0)
-rez_enz<-subset(rez_sub, (g1=="AP Activity (nmol/h/g dry aggregate)" | g1=="BG Activity (nmol/h/g dry aggregate)") |
-(g2=="NAG Activity (nmol/h/g dry aggregate)" | g2=="CB Activity (nmol/h/g dry aggregate)" | g2=="AP Activity (nmol/h/g dry aggregate)" | g2=="BG Activity (nmol/h/g dry aggregate)" | g2=="BX Activity (nmol/h/g dry aggregate)"))
-gmicro<-graph.edgelist(as.matrix(rez_enz[,1:2]),directed=FALSE)
-E(gmicro)$weight<-rez_enz$sm_mean
-plot.igraph(gmicro,edge.width=log(E(gmicro)$weight,base=2))
+write.table(rez, "bayezymes_network_results.txt",sep=" ",row.names=F)
 
 
-# now picking out species from those genera
-as.matrix(unique(data$genus))
-
-data2<-subset(data, genus=="  g__Conexibacter" |  
-genus=="  g__Rhodobacter" |
-genus=="  g__Anaerolinea"|
-genus=="  g__Dactylosporangium"|
-genus=="  g__Cohnella"|
-genus=="  g__Candidatus Koribacter"|
-genus=="  g__Geoderma"|
-genus=="  g__OR-59"|
-genus=="  g__Luteolibacter"|
-genus=="  g__JG37-AG-70"|
-genus=="  g__Nocardia"|
-genus=="  g__Pontibacter"|
-genus=="  g__Balneimonas"|
-genus=="  g__Niastella"|
-genus=="  g__Paenibacillus"|
-genus=="  g__Ramlibacter"|
-genus=="  g__Singulisphaera"|
-genus=="  g__Clostridium")
-
-species<-data.frame(cast(data2, Sample+Date+Block+Crop+SoilFrac~species,value="value",fun.aggregate=sum ),check.names=FALSE)
-
-head(species)
