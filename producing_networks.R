@@ -78,7 +78,7 @@ sub2$EC_status<-"ec"
 subs<-rbind(sub1,sub2)
 library(plyr)
 
-noeuk_summed<-ddply(subs, .(Cazy_fam,Cazy_fam2,EC_status,t3),summarise,.progress="text",
+noeuk_summed<-ddply(subs, .(Cazy_fam,Cazy_fam2,EC_status,EC,t3),summarise,.progress="text",
  PF_LM_H03=sum(PF_LM_H03),   PF_LM_H08=sum(PF_LM_H08),   PF_LM_H14=sum(PF_LM_H14),   PF_LM_H16=sum(PF_LM_H16),
  PF_MI_H01=sum(PF_MI_H01),   PF_MI_H06=sum(PF_MI_H06),   PF_MI_H12=sum(PF_MI_H12),   PF_MI_H13=sum(PF_MI_H13),   PF_SM_H02=sum(PF_SM_H02),
  PF_SM_H10=sum(PF_SM_H10),   PF_SM_H11=sum(PF_SM_H11),   PF_WS_H04=sum(PF_WS_H04),   PF_WS_H07=sum(PF_WS_H07),   PF_WS_H09=sum(PF_WS_H09),
